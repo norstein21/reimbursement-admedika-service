@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReimbursementModule } from './reimbursement/reimbursement.module';
+import { ReimbursementMCModule } from './managed-care/reimbursement-mc.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ReimbursementModule } from './reimbursement/reimbursement.module';
         database: configuration().database.database,
         autoLoadEntities: true,
         synchronize: true, // Set to false in production
+
         options: {
           encrypt: false,
           trustServerCertificate: true,
@@ -33,6 +35,7 @@ import { ReimbursementModule } from './reimbursement/reimbursement.module';
       }),
     }),
     ReimbursementModule,
+    ReimbursementMCModule,
   ],
 
   controllers: [AppController],

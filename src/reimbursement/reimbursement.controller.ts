@@ -1,6 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ReimbursementService } from './reimbursement.service';
-import { CreateReimbursementDto } from './dto/create-reimbursement.dto';
+import {
+  CreateReimbursementDto,
+  ReimbursementDetailDto,
+} from './dto/create-reimbursement.dto';
+import { Response } from 'express';
 
 @Controller('reimbursement')
 export class ReimbursementController {
@@ -10,10 +14,22 @@ export class ReimbursementController {
   @Post()
   async createReimbursement(
     @Body('header') dto: CreateReimbursementDto,
-    @Body('details') details: any,
+    @Body('detail') details: ReimbursementDetailDto[],
+    @Res() res: Response,
   ) {
-    const reimbursementDto = { ...dto, details };
-    return this.reimbursementService.submitReimbursement(reimbursementDto);
+    try {
+      const reimbursementDto = { ...dto, details };
+      const { savedId, responseData, responseStatus, message } =
+        await this.reimbursementService.submitReimbursement(reimbursementDto);
+
+      return res.status(responseStatus).json({
+        savedId,
+        responseData,
+        message,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get('details')

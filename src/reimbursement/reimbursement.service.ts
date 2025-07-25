@@ -3,52 +3,99 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
 import { ReimbursementHeader } from './entities/reimbursement-header.entity';
 import { CreateReimbursementDto } from './dto/create-reimbursement.dto';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ReimbursementDetail } from './entities/reimbursement-detail.entity';
 
 @Injectable()
 export class ReimbursementService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
+
     @InjectRepository(ReimbursementHeader)
     private headerRepository: Repository<ReimbursementHeader>,
+
+    @InjectRepository(ReimbursementDetail)
+    private detailRepository: Repository<ReimbursementDetail>,
+
     private readonly httpService: HttpService, // Assuming HttpService is used for external API calls
+    private readonly dataSource: DataSource,
   ) {}
 
   async submitReimbursement(dto: CreateReimbursementDto) {
-    this.logger.log(
-      `Submitting reimbursement with DTO: ${JSON.stringify(dto)}`,
-    );
-    const saved = await this.headerRepository.save(dto);
-    this.logger.log(`Reimbursement submitted with ID: ${saved.id}`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    // const response = await this.httpService.axiosRef.post(
-    //   process.env.ADMEDIKA_API_URL || 'https://api.admedika.com',
-    //   {
-    //     endpoint: 'submitReimbursement',
-    //     method: 'POST',
-    //     projectId: process.env.ADMEDIKA_PROJECT_ID || 'default_project_id',
-    //     header: { ...dto },
-    //     dto: dto.details,
-    //   },
-    //   {
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       Authorization: `Bearer ${process.env.ADMEDIKA_API_KEY || 'your_api_key'}`,
-    //     },
-    //   },
-    // );
+    try {
+      this.logger.log(
+        `Submitting reimbursement with DTO: ${JSON.stringify(dto)}`,
+      );
+      const saved = await this.headerRepository.save(dto);
+      const savedDetails = dto.details.map((detail) => {
+        const reimbursementDetail = this.detailRepository.create({
+          ...detail,
+          header: saved, // Associate the detail with the saved header
+        });
+        return this.detailRepository.save(reimbursementDetail);
+      });
+      await Promise.all(savedDetails);
 
-    // return {
-    //   savedId: saved.id,
-    //   responseData: response.data,
-    // };
+      const payload = {
+        endpoint: 'getReimbursement',
+        project_id: process.env.ADMEDIKA_PROJECT_ID_MEDICARE || 'test',
+        method: 'POST',
+        header: { ...dto },
+        detail: dto.details,
+      };
 
-    return {
-      savedId: saved.id,
-      responseData: 'Reimbursement submitted successfully!',
-    };
+      const response = await this.httpService.axiosRef.post(
+        process.env.ADMEDIKA_MEDICARE_URL || 'https://api.admedika.com',
+        payload,
+        {
+          headers: {
+            // 'Content-Type': 'application/json',
+            'app-id': process.env.ADMEDIKA_APP_ID_MEDICARE || 'default_app_id',
+            signature:
+              process.env.ADMEDIKA_SIGNATURE_MEDICARE || 'default_signature',
+            Authorization: process.env.ADMEDIKA_SIGNATURE_MEDICARE,
+          },
+        },
+      );
+
+      if (response.data.code == 500) {
+        await queryRunner.rollbackTransaction();
+        return {
+          savedId: saved.id,
+          responseData: response.data ?? null,
+          responseStatus: response.status,
+          message: response.data.message,
+        };
+      }
+
+      await queryRunner.commitTransaction();
+
+      this.logger.log(
+        `Reimbursement response: ${JSON.stringify(response.data)}`,
+      );
+
+      return {
+        savedId: saved.id,
+        responseData: response.data,
+        responseStatus: response.status,
+        message: 'Success sent request',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error('Error submitting reimbursement', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+      this.logger.log(
+        `Reimbursement submission completed for DTO: ${JSON.stringify(dto)}`,
+      );
+    }
   }
 
   getReimbursementDetails(): string {
