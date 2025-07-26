@@ -27,11 +27,13 @@ export class ReimbursementMCService {
     try {
       const header = new ReimbursementMCHeader();
       Object.assign(header, data);
+      console.log('sampe sini?');
       const savedHeader = await queryRunner.manager.save(header);
       this.logger.log(
         `MC claim submitted with header ID: ${savedHeader.id}`,
         'ReimbursementMCService',
       );
+
       const response = await this.http.axiosRef.post(
         process.env.ADMEDIKA_MANAGED_CARE_URL ?? '',
         data,

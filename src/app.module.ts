@@ -8,6 +8,8 @@ import configuration from './config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReimbursementModule } from './reimbursement/reimbursement.module';
 import { ReimbursementMCModule } from './managed-care/reimbursement-mc.module';
+import { HttpModule } from '@nestjs/axios';
+import * as https from 'https';
 
 @Module({
   imports: [
@@ -16,6 +18,12 @@ import { ReimbursementMCModule } from './managed-care/reimbursement-mc.module';
       load: [configuration],
     }),
     WinstonModule.forRoot(winstonConfig),
+    HttpModule.register({
+      timeout: 10000,
+      httpsAgent: new https.Agent({
+        secureProtocol: 'TLSv1_2_method',
+      }),
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

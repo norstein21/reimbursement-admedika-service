@@ -87,6 +87,7 @@ export class ReimbursementService {
         message: 'Success sent request',
       };
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
       this.logger.error('Error submitting reimbursement', error);
       throw error;
