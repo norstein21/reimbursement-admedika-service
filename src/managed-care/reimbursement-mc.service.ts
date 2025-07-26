@@ -27,7 +27,6 @@ export class ReimbursementMCService {
     try {
       const header = new ReimbursementMCHeader();
       Object.assign(header, data);
-      console.log('sampe sini?');
       const savedHeader = await queryRunner.manager.save(header);
       this.logger.log(
         `MC claim submitted with header ID: ${savedHeader.id}`,
