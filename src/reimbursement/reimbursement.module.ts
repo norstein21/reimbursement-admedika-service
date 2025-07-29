@@ -20,12 +20,13 @@ import { WinstonModule } from 'nest-winston';
   controllers: [ReimbursementController],
   providers: [
     ReimbursementService,
-    {
-      provide: 'REIMBURSEMENT_REPOSITORY',
-      inject: [DataSource],
-      useFactory: (dataSource) => ReimbursementRepository(dataSource),
-    },
+    // {
+    //   provide: 'REIMBURSEMENT_REPOSITORY',
+    //   inject: [DataSource],
+    //   useFactory: (dataSource) => new ReimbursementRepository(dataSource),
+    // },
+    ReimbursementRepository,
   ],
-  exports: ['REIMBURSEMENT_REPOSITORY'],
+  // exports: ['REIMBURSEMENT_REPOSITORY'],
 })
 export class ReimbursementModule {}

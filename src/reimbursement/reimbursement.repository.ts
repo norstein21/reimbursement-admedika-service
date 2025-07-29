@@ -1,13 +1,17 @@
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ReimbursementHeader } from './entities/reimbursement-header.entity';
+import { Injectable } from '@nestjs/common';
 
-export const ReimbursementRepository = (dataSource: DataSource) => {
-  dataSource.getRepository(ReimbursementHeader).extend({
-    async findByClaimRef(claimRef: string) {
-      return this.findOne({
-        where: { claim_ref: claimRef },
-        relations: ['details'],
-      });
-    },
-  });
-};
+@Injectable()
+export class ReimbursementRepository extends Repository<ReimbursementHeader> {
+  constructor(private readonly dataSource: DataSource) {
+    super(ReimbursementHeader, dataSource.createEntityManager());
+  }
+
+  async findByClaimRef(claimRef: string) {
+    return this.findOne({
+      where: { claim_ref: claimRef },
+      relations: ['details'],
+    });
+  }
+}

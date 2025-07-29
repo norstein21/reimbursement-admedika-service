@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { ReimbursementService } from './reimbursement.service';
 import {
   CreateReimbursementDto,
@@ -35,5 +35,10 @@ export class ReimbursementController {
   @Get('details')
   getReimbursementDetails() {
     return this.reimbursementService.getReimbursementDetails();
+  }
+
+  @Get(':claimRef')
+  async getClaimRef(@Param('claimRef') claimRef: string) {
+    return this.reimbursementService.getReimbursementByClaimRef(claimRef);
   }
 }

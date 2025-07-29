@@ -6,6 +6,7 @@ import { CreateReimbursementDto } from './dto/create-reimbursement.dto';
 import { DataSource, Repository } from 'typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ReimbursementDetail } from './entities/reimbursement-detail.entity';
+import { ReimbursementRepository } from './reimbursement.repository';
 
 @Injectable()
 export class ReimbursementService {
@@ -18,6 +19,8 @@ export class ReimbursementService {
 
     @InjectRepository(ReimbursementDetail)
     private detailRepository: Repository<ReimbursementDetail>,
+
+    private readonly reimbursementRepo: ReimbursementRepository,
 
     private readonly httpService: HttpService, // Assuming HttpService is used for external API calls
     private readonly dataSource: DataSource,
@@ -32,15 +35,9 @@ export class ReimbursementService {
       this.logger.log(
         `Submitting reimbursement with DTO: ${JSON.stringify(dto)}`,
       );
-      const saved = await this.headerRepository.save(dto);
-      const savedDetails = dto.details.map((detail) => {
-        const reimbursementDetail = this.detailRepository.create({
-          ...detail,
-          header: saved, // Associate the detail with the saved header
-        });
-        return this.detailRepository.save(reimbursementDetail);
-      });
-      await Promise.all(savedDetails);
+      const header = new ReimbursementHeader();
+      Object.assign(header, dto);
+      await queryRunner.manager.save(header);
 
       const payload = {
         endpoint: 'getReimbursement',
@@ -67,7 +64,7 @@ export class ReimbursementService {
       if (response.data.code == 500) {
         await queryRunner.rollbackTransaction();
         return {
-          savedId: saved.id,
+          savedId: header.id,
           responseData: response.data ?? null,
           responseStatus: response.status,
           message: response.data.message,
@@ -81,7 +78,7 @@ export class ReimbursementService {
       );
 
       return {
-        savedId: saved.id,
+        savedId: header.id,
         responseData: response.data,
         responseStatus: response.status,
         message: 'Success sent request',
@@ -99,6 +96,12 @@ export class ReimbursementService {
   }
 
   getReimbursementDetails(): string {
+    // get repository
+
     return 'Reimbursement details fetched successfully!';
+  }
+
+  async getReimbursementByClaimRef(claimRef: string) {
+    return this.reimbursementRepo.findByClaimRef(claimRef);
   }
 }

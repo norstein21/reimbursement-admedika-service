@@ -12,8 +12,10 @@ export class ReimbursementMCService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
-    @InjectRepository(ReimbursementMCHeader)
-    private headerRepository: Repository<ReimbursementMCHeader>,
+
+    // @InjectRepository(ReimbursementMCHeader)
+    // private headerRepository: Repository<ReimbursementMCHeader>,
+
     private http: HttpService,
     private readonly dataSource: DataSource,
     // private config: ConfigService,
@@ -28,10 +30,7 @@ export class ReimbursementMCService {
       const header = new ReimbursementMCHeader();
       Object.assign(header, data);
       const savedHeader = await queryRunner.manager.save(header);
-      this.logger.log(
-        `MC claim submitted with header ID: ${savedHeader.id}`,
-        'ReimbursementMCService',
-      );
+      this.logger.log(`MC claim submitted with header ID: ${savedHeader.id}`);
 
       const response = await this.http.axiosRef.post(
         process.env.ADMEDIKA_MANAGED_CARE_URL ?? '',
