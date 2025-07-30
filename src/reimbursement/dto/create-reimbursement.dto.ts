@@ -8,12 +8,12 @@ import {
 import { Type } from 'class-transformer';
 
 export class ReimbursementDetailDto {
-  @IsString() payor_id: string;
-  @IsString() corporate_id: string;
-  @IsString() policy_no: string;
-  @IsString() member_id: string;
-  @IsString() plan_id: string;
-  @IsString() coverage_type: string;
+  // @IsString() payor_id: string;
+  // @IsString() corporate_id: string;
+  // @IsString() policy_no: string;
+  // @IsString() member_id: string;
+  // @IsString() plan_id: string;
+  // @IsString() coverage_type: string;
   @IsString() claim_ref: string;
   @IsString() benefit_code: string;
   @IsString() benefit_desc: string;

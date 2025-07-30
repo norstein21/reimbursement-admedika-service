@@ -7,7 +7,6 @@ import { ReimbursementHeader } from './entities/reimbursement-header.entity';
 import { ReimbursementRepository } from './reimbursement.repository';
 import { ConfigModule } from '@nestjs/config';
 import { ReimbursementDetail } from './entities/reimbursement-detail.entity';
-import { DataSource } from 'typeorm';
 import { WinstonModule } from 'nest-winston';
 
 @Module({
@@ -18,15 +17,6 @@ import { WinstonModule } from 'nest-winston';
     WinstonModule,
   ],
   controllers: [ReimbursementController],
-  providers: [
-    ReimbursementService,
-    // {
-    //   provide: 'REIMBURSEMENT_REPOSITORY',
-    //   inject: [DataSource],
-    //   useFactory: (dataSource) => new ReimbursementRepository(dataSource),
-    // },
-    ReimbursementRepository,
-  ],
-  // exports: ['REIMBURSEMENT_REPOSITORY'],
+  providers: [ReimbursementService, ReimbursementRepository],
 })
 export class ReimbursementModule {}

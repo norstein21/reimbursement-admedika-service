@@ -39,12 +39,22 @@ export class ReimbursementService {
       Object.assign(header, dto);
       await queryRunner.manager.save(header);
 
+      const mergeDetails = dto.details.map((detail) => ({
+        ...detail,
+        payor_id: dto.payor_id,
+        corporate_id: dto.corporate_id,
+        policy_no: dto.policy_no,
+        member_id: dto.member_id,
+        plan_id: dto.plan_id,
+        coverage_type: dto.coverage_type,
+      }));
+
       const payload = {
         endpoint: 'getReimbursement',
         project_id: process.env.ADMEDIKA_PROJECT_ID_MEDICARE || 'test',
         method: 'POST',
         header: { ...dto },
-        detail: dto.details,
+        detail: mergeDetails,
       };
 
       const response = await this.httpService.axiosRef.post(
