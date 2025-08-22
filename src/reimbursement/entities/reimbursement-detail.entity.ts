@@ -1,4 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ReimbursementHeader } from './reimbursement-header.entity';
 
 @Entity('reimbursement_details')
@@ -7,11 +15,12 @@ export class ReimbursementDetail {
   @ManyToOne(() => ReimbursementHeader, (header) => header.details)
   header: ReimbursementHeader;
 
-  @Column() claim_ref: string;
   @Column() benefit_code: string;
   @Column() benefit_desc: string;
   @Column() amount_incurred: number;
   @Column() amount_approved: number;
   @Column() amount_not_approved: number;
   @Column() excess_paid: number;
+  @CreateDateColumn() created_at: Date;
+  @UpdateDateColumn() updated_at: Date;
 }

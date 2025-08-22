@@ -22,11 +22,11 @@ export class ReimbursementMCDetail {
   @Type(() => ReimbursementMCHeader)
   header: ReimbursementMCHeader;
 
-  @Column({ length: 10 })
+  @Column({ length: 50 })
   KD_ITEM: string;
 
-  @Column({ length: 120 })
-  NM_ITEM: string;
+  @Column({ length: 120, nullable: true })
+  NM_ITEM?: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   TTL_CLAIM: number;

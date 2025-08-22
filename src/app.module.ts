@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { WinstonModule } from 'nest-winston';
-import { winstonConfig } from './logger/winston.config';
+import { Logger, Module } from '@nestjs/common';
+// import { WinstonModule } from 'nest-winston';
+// import { winstonConfig } from './logger/winston.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +10,7 @@ import { ReimbursementModule } from './reimbursement/reimbursement.module';
 import { ReimbursementMCModule } from './managed-care/reimbursement-mc.module';
 import { HttpModule } from '@nestjs/axios';
 import * as https from 'https';
+import { LoggingModule } from './logger/logging.module';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import * as https from 'https';
       isGlobal: true,
       load: [configuration],
     }),
-    WinstonModule.forRoot(winstonConfig),
+    // WinstonModule.forRoot(winstonConfig),
     HttpModule.register({
       timeout: 10000,
       httpsAgent: new https.Agent({
@@ -35,7 +36,6 @@ import * as https from 'https';
         database: configuration().database.database,
         autoLoadEntities: true,
         synchronize: true, // Set to false in production
-
         options: {
           encrypt: false,
           trustServerCertificate: true,
@@ -44,9 +44,10 @@ import * as https from 'https';
     }),
     ReimbursementModule,
     ReimbursementMCModule,
+    LoggingModule,
   ],
-
-  controllers: [AppController],
   providers: [AppService],
+  controllers: [AppController],
+  // exports: [Logger],
 })
 export class AppModule {}

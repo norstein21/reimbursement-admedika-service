@@ -14,4 +14,11 @@ export class ReimbursementRepository extends Repository<ReimbursementHeader> {
       relations: ['details'],
     });
   }
+
+  async findByRequestStatus(requestStatus: number) {
+    return this.findAndCount({
+      where: { request_status: requestStatus },
+      relations: ['details'],
+    });
+  }
 }

@@ -5,6 +5,8 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   BeforeInsert,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ReimbursementMCDetail } from './reimbursement-mc-detail.entity';
 
@@ -22,7 +24,7 @@ export class ReimbursementMCHeader {
   @Column({ length: 35 })
   NO_POLIS: string;
 
-  @Column({ length: 16 })
+  @Column({ length: 70 })
   INSURANCE_NO: string;
 
   @Column({ length: 60 })
@@ -50,7 +52,7 @@ export class ReimbursementMCHeader {
   PROVIDER_CODE: string;
 
   @Column({ length: 70 })
-  RS: string;
+  PROVIDER_NAME: string;
 
   @Column({ type: 'date' })
   INDATE: string;
@@ -68,7 +70,7 @@ export class ReimbursementMCHeader {
   KD_PLAN_DTL: string;
 
   @Column({ length: 10 })
-  KDICD1: string;
+  KD_ICD: string;
 
   @Column({ length: 255, nullable: true })
   DIAGNOSIS_DESC?: string;
@@ -85,9 +87,6 @@ export class ReimbursementMCHeader {
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   EXCESS_PAID: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2 })
-  EXCESS_NOT_PAID: number;
-
   @Column({ length: 2000, nullable: true })
   KETERANGAN?: string;
 
@@ -101,10 +100,14 @@ export class ReimbursementMCHeader {
   USER_NM: string;
 
   @Column({ type: 'date' })
-  RECEIVED_DATE: string;
+  RCV_DATE: string;
 
   @Column({ length: 30 })
   HOSPITAL_INVOICE_ID: string;
+
+  @CreateDateColumn() request_date: Date;
+  @UpdateDateColumn() update_date: Date;
+  @Column({ type: 'bit', default: 0 }) request_status: number;
 
   @OneToMany(() => ReimbursementMCDetail, (detail) => detail.header, {
     cascade: true,
